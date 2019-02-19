@@ -1,0 +1,84 @@
+{% extends 'base_head.html' %}
+{% block body_script %}
+    <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/static/js/slide.js"></script>
+	<script type="text/javascript">
+		BCSlideshow('focuspic');
+		var oFruit = document.getElementById('fruit_more');
+		var oShownum = document.getElementById('show_count');
+
+		var hasorder = localStorage.getItem('order_finish');
+
+		if(hasorder)
+		{
+			oShownum.innerHTML = '2';
+		}
+
+		oFruit.onclick = function(){
+			window.location.href = 'list.html';
+		}
+	</script>
+{% endblock %}
+{% block body %}
+    <div class="navbar_con">
+		<div class="navbar">
+			<h1 class="fl">全部商品分类</h1>
+			<ul class="navlist fl">
+				<li><a href="">首页</a></li>
+				<li class="interval">|</li>
+				<li><a href="">手机生鲜</a></li>
+				<li class="interval">|</li>
+				<li><a href="">抽奖</a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="center_con clearfix">
+		<ul class="subnav fl">
+            {% for category in categorys %}
+                <li><a href="#model01" class="fruit">{{ category.title }}</a></li>
+            {% endfor %}
+		</ul>
+		<div class="slide fl">
+			<ul class="slide_pics">
+				<li><img src="/static/images/slide.jpg" alt="幻灯片"></li>
+				<li><img src="/static/images/slide02.jpg" alt="幻灯片"></li>
+				<li><img src="/static/images/slide03.jpg" alt="幻灯片"></li>
+				<li><img src="/static/images/slide04.jpg" alt="幻灯片"></li>
+			</ul>
+			<div class="prev"></div>
+			<div class="next"></div>
+			<ul class="points"></ul>
+		</div>
+		<div class="adv fl">
+			<a href="#"><img src="/static/images/adv01.jpg"></a>
+			<a href="#"><img src="/static/images/adv02.jpg"></a>
+		</div>
+	</div>
+    {% for good in goods %}
+        <div class="list_model">
+		    <div class="list_title clearfix">
+			<h3 class="fl" id="model01">{{ good.category }}</h3>
+			<div class="subtitle fl">
+				<span>|</span>
+                {% for hot_good in good.hot_goods %}
+                    <a href="#">{{ hot_good.g_title }}</a>
+                {% endfor %}
+			</div>
+			<a href="/goods/list/?category={{ good.category_id }}&sort_type=default" class="goods_more fr" id="fruit_more">查看更多 ></a>
+		</div>
+		    <div class="goods_con clearfix">
+			<div class="goods_banner fl"><img src="/static/images/banner01.jpg"></div>
+			<ul class="goods_list fl">
+                {% for show_good in good.show_goods %}
+                    <li>
+                        <h4><a href="/goods/detail/{{ show_good.id }}/">{{ show_good.g_title }}</a></h4>
+                        <a href="/goods/detail/{{ show_good.id }}/"><img src="/static/{{ show_good.g_pic }}"></a>
+                        <div class="prize">¥ {{ show_good.g_price }}</div>
+                    </li>
+                {% endfor %}
+			</ul>
+		</div>
+	    </div>
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base_head.html' %}
+{% block body %}
+    <div class="main_con clearfix">
+        {% include 'fs_user/base_user.html' %}
+        <div class="right_content clearfix">
+        <h3 class="common_title2">全部订单</h3>
+        {% for order in orders %}
+            <ul class="order_list_th w978 clearfix">
+            <li class="col01">{{ order.order_date }}</li>
+            <li class="col02">订单号：56872934</li>
+            <li class="col02 stress">未支付</li>
+        </ul>
+            <table class="order_list_table w980">
+            <tbody>
+                <tr>
+                    <td width="55%">
+                        {% for detail in order.orderdetailinfo_set.all %}
+                            <ul class="order_goods_list clearfix">
+                                <li class="col01"><img src="/static/{{ detail.good.g_pic }}"></li>
+                                <li class="col02">{{ detail.good.g_title }}<em>{{ detail.good.g_price }}/{{ detail.good.g_unit }}</em></li>
+                                <li class="col03">{{ detail.order_detail_count }}</li>
+                                <li class="col04">{{ detail.order_detail_price }}</li>
+                            </ul>
+                        {% endfor %}
+                    </td>
+                    <td width="15%">{{ order.order_total_price }}</td>
+                    <td width="15%">待付款</td>
+                    <td width="15%"><a href="#" class="oper_btn">去付款</a></td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+    </div>
+    </div>
+{% endblock %}

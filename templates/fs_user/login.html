@@ -1,0 +1,97 @@
+{% extends 'base_foot.html' %}
+{% block head %}
+    <script>
+        $(function () {
+            {# 如果用户没有输入用户名或者密码，再或者用户名长度不够，密码长度不够，总之属于格式上的错误的，都可以交给前端来进行验证，可以减轻服务器响应的压力。 #}
+        {# 问题：<form>具有默认发送请求的功能，只要点击按钮，就会向action发送请求。如何在数据格式符合要求的时候再让它发送请求，而数据格式不符合要求的情况下，阻止默认的请求事件。 #}
+        {# 声明两个变量，用于记录用户输入的数据在格式上是否符合要求。 #}
+        error_username = false;
+        error_pwd = false;
+
+        {# 当用户名和密码格式符合要求，向后台发送请求，后台对数据进行验证，如果两个数据不正确，将error_username或者error_pwd的值传递给前端 #}
+        if ({{ error_username }}){
+            $('.user_error').html('用户名错误').show();
+        }
+        if ({{ error_pwd }}){
+            $('.pwd_error').html('密码错误').show();
+        }
+
+        {# 获取输入框内容 #}
+        $('.name_input').blur(function () {
+            if($(this).val().length == 0){
+                $('.user_error').html('用户名不能为空').show();
+                error_username = true;
+            }else{
+                $('.user_error').hide();
+                error_username = false;
+            }
+        });
+        $('.pass_input').blur(function () {
+            if($(this).val().length == 0){
+                $('.pwd_error').html('密码不能为空').show();
+                error_pwd = true;
+            }else{
+                $('.pwd_error').hide();
+                error_pwd = false;
+            }
+        });
+
+        $('form').submit(function (event) {
+            alert('开始');
+            {# 重写form表单的submit事件，注意：必须是$('form').submit这种写法，不能使用其他标签，必须是form。 #}
+            uname = $('.name_input').val();
+            pwd = $('.pass_input').val();
+            if (uname == '') {
+                $('.user_error').html('用户名不能为空').show();
+                error_username = true;
+            }
+            if (pwd == '') {
+                $('.pwd_error').html('密码不能为空').show();
+                error_pwd = true;
+            }
+
+            if (error_username == false && error_pwd == false){
+                alert('没有错误');
+                {#submit事件 return true允许提交请求 #}
+                return true;
+            }else{
+                alert('有错误');
+                {#submit事件 return false 不允许提交请求 #}
+                return false;
+            }
+        });
+        });
+    </script>
+{% endblock %}
+{% block body %}
+    <div class="login_top clearfix">
+		<a href="index.html" class="login_logo"><img src="/static/images/logo02.png"></a>
+	</div>
+	<div class="login_form_bg">
+		<div class="login_form_wrap clearfix">
+			<div class="login_banner fl"></div>
+			<div class="slogan fl">日夜兼程 · 急速送达</div>
+			<div class="login_form fr">
+				<div class="login_title clearfix">
+					<h1>用户登录</h1>
+					<a href="/user/register/">立即注册</a>
+				</div>
+				<div class="form_input">
+					<form action="/user/login/" method="post">
+                        {% csrf_token %}
+						<input type="text" name="username" class="name_input" placeholder="请输入用户名" value="{{ username }}">
+						<div class="user_error">输入错误</div>
+						<input type="password" name="pwd" class="pass_input" placeholder="请输入密码" value="{{ password }}">
+						<div class="pwd_error">输入错误</div>
+						<div class="more_input clearfix">
+							<input type="checkbox" name="jizhu" value="1" checked="checked">
+							<label>记住用户名</label>
+							<a href="#">忘记密码</a>
+						</div>
+						<input type="submit" name="" value="登录" class="input_submit">
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

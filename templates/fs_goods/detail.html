@@ -1,0 +1,92 @@
+{% extends 'fs_goods/base_goods.html' %}
+{% block body_script %}
+    <script>
+        function add() {
+            {# 获取当前数量 #}
+            num = $('.num_show');
+            current_num = parseInt(num.val());
+
+            if (current_num >= {{ goods.g_stock }}){
+                return;
+            }
+            {# 将当前数量+1，再重新给数量赋值 #}
+            num.val(current_num+1);
+            {# 用户点击+号，主动触发change()事件 #}
+            $('.num_show').change();
+            {#$('.num_show').blur();#}
+        }
+        function minus() {
+            current_num = parseInt(num.val());
+            console.log(current_num);
+            if (current_num <= 1){
+                return;
+            }
+            num.val(current_num-1);
+            $('.num_show').change();
+        }
+        {# 当用户手动修改数量，会触发change事件，同时光标失去焦点的时候，会触发blur()事件。 #}
+        {# 如果用户通过点击+/-实现数量的变化，如果触发change()和blur()事件？ #}
+        $('.num_show').change(function () {
+            total_num = parseInt($('.num_show').val());
+            if (total_num <= 1){
+                total_num = 1;
+            }
+            price = parseFloat($('.show_pirze em').text());
+            total_price = price * total_num;
+            {# toFixed(2)：将小数转化成为字符串，并且只保留2位小数。 #}
+            $('.total em').text(total_price.toFixed(2) + '元');
+        });
+        {# 点击加入购物车，向后台发送ajax请求，后台返回商品总数量 #}
+        $('#add_cart').click(function () {
+            total_num = parseInt($('.num_show').val());
+            goods_id = {{ goods.id }};
+            url = '/carts/add/' + goods_id + '/' + total_num + '/';
+            $.get(url, function (data) {
+                $('.goods_count').text(data.total_count);
+            });
+        });
+    </script>
+{% endblock %}
+{% block goods_detail %}
+    <div class="goods_detail_con clearfix">
+		<div class="goods_detail_pic fl"><img src="/static/{{ goods.g_pic }}"></div>
+
+		<div class="goods_detail_list fr">
+			<h3>{{ goods.g_title }}</h3>
+			<p>{{ goods.g_abstract }}</p>
+			<div class="prize_bar">
+				<span class="show_pirze">¥<em>{{ goods.g_price }}</em></span>
+				<span class="show_unit">单  位：{{ goods.g_unit }}</span>
+			</div>
+			<div class="goods_num clearfix">
+				<div class="num_name fl">数 量：</div>
+				<div class="num_add fl">
+					<input type="text" class="num_show fl" value="1">
+					<a href="javascript:add();" class="add fr">+</a>
+					<a href="javascript:minus();" class="minus fr">-</a>
+{#                    <a href="javascript:;" class="add fr" onclick="add()">+</a>#}
+{#					<a href="javascript:;" class="minus fr" onclick="add()">-</a>#}
+				</div>
+			</div>
+			<div class="total">总价：<em>16.80元</em></div>
+			<div class="operate_btn">
+				<a href="javascript:;" class="buy_btn">立即购买</a>
+				<a href="javascript:;" class="add_cart" id="add_cart">加入购物车</a>
+			</div>
+		</div>
+	</div>
+    <div class="r_wrap fr clearfix">
+			<ul class="detail_tab clearfix">
+				<li class="active">商品介绍</li>
+				<li>评论</li>
+			</ul>
+
+			<div class="tab_content">
+				<dl>
+					<dt>商品详情：</dt>
+					<dd>{{ goods.g_content }}</dd>
+				</dl>
+			</div>
+
+		</div>
+{% endblock %}

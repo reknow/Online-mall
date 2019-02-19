@@ -1,0 +1,106 @@
+{% extends 'base_head.html' %}
+{% block head %}
+    <script>
+        $(function () {
+            var total_price = 0;
+            var total_count = 0;
+            $('.goods_list_td').each(function () {
+                {# 获取每一个商品的单价和数量 #}
+                good_price = $(this).children('.col05').text();
+                good_count = $(this).children('.col06').text();
+                prices = parseInt(good_count) * parseFloat(good_price);
+                {# 将小计的价格prices替换Html中的默认价格 #}
+                $(this).children('.col07').text(prices.toFixed(2) + '元');
+                total_price += parseFloat(prices);
+                total_count += parseInt(good_count);
+            });
+            $('.total_goods_count > b').text(total_price.toFixed(2));
+            $('.total_goods_count > em').text(total_count);
+            total_pay = total_price + 10;
+            $('.total_pay').text(total_pay.toFixed(2));
+            $.ajaxSetup({
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                }
+            });
+            $('#order_btn').click(function(){
+                var cartids = '';
+                $('.goods_list_td').each(function () {
+                    cartid = $(this).attr('id');
+                    cartids += cartid;
+                    cartids += ';';
+                });
+                $.ajax({
+                    url: '/order/add/',
+                    type: 'POST',
+                    data: {
+                        'cartids': cartids,
+                        'total_price':total_pay,
+                        'address': $('#address').text()
+                    },
+                    success: function  (data, status){
+                        if (data == 'ok'){
+                            window.location.href = '/user/order/';
+                        }
+                    }
+                });
+            });
+        })
+    </script>
+{% endblock %}
+{% block body %}
+    <h3 class="common_title">确认收货地址</h3>
+	<div class="common_list_con clearfix">
+		<dl>
+			<dt>寄送到：</dt>
+			<dd id="address"><input type="radio" name="" checked="">{{ user.u_shou_address }} （{{ user.u_name }} 收） {{ user.u_email }}</dd>
+		</dl>
+		<a href="/user/site/" class="edit_site">编辑收货地址</a>
+
+	</div>
+	<h3 class="common_title">支付方式</h3>
+	<div class="common_list_con clearfix">
+		<div class="pay_style_con clearfix">
+			<input type="radio" name="pay_style" checked>
+			<label class="cash">货到付款</label>
+			<input type="radio" name="pay_style">
+			<label class="weixin">微信支付</label>
+			<input type="radio" name="pay_style">
+			<label class="zhifubao"></label>
+			<input type="radio" name="pay_style">
+			<label class="bank">银行卡支付</label>
+		</div>
+	</div>
+	<h3 class="common_title">商品列表</h3>
+	<div class="common_list_con clearfix">
+		<ul class="goods_list_th clearfix">
+			<li class="col01">商品名称</li>
+			<li class="col02">商品单位</li>
+			<li class="col03">商品价格</li>
+			<li class="col04">数量</li>
+			<li class="col05">小计</li>
+		</ul>
+        {% for cart in carts %}
+            <ul class="goods_list_td clearfix" id="{{ cart.id }}">
+                <li class="col01">{{ forloop.counter }}</li>
+                <li class="col02"><img src="/static/{{ cart.good.g_pic }}"></li>
+                <li class="col03">{{ cart.good.g_title }}</li>
+                <li class="col04">{{ cart.good.g_unit }}</li>
+                <li class="col05">{{ cart.good.g_price }}</li>
+                <li class="col06">{{ cart.count }}</li>
+                <li class="col07">25.80元</li>
+            </ul>
+        {% endfor %}
+	</div>
+	<h3 class="common_title">总金额结算</h3>
+	<div class="common_list_con clearfix">
+		<div class="settle_con">
+			<div class="total_goods_count">共<em>1</em>件商品，总金额<b>20元</b></div>
+			<div class="transit">运费：<b>10元</b></div>
+			<div class="total_pay">实付款：<b>52.60元</b></div>
+		</div>
+	</div>
+	<div class="order_submit clearfix">
+		<a href="javascript:;" id="order_btn">提交订单</a>
+	</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'base_foot.html' %}
+{% block header %}
+    {# 导航条部分 #}
+    <div class="header_con">
+		<div class="header">
+			<div class="welcome fl">欢迎来到天天生鲜!</div>
+			<div class="fr">
+                {% if request.session.username %}
+                    <div class="login_btn fl">
+                        欢迎您：<em>{{ request.session.username }}</em>
+                    </div>
+                {% else %}
+                    <div class="login_btn fl">
+                        <a href="/user/login/">登录</a>
+                        <span>|</span>
+                        <a href="/user/register/">注册</a>
+                    </div>
+                {% endif %}
+				<div class="user_link fl">
+					<span>|</span>
+					<a href="/user/info/">用户中心</a>
+					<span>|</span>
+					<a href="/carts/list/">我的购物车</a>
+					<span>|</span>
+					<a href="user_center_order.html">我的订单</a>
+				</div>
+			</div>
+		</div>
+	</div>
+    {# 搜索框部分 + Logo #}
+    <div class="search_bar clearfix">
+		<a href="/goods/index/" class="logo fl"><img src="/static/images/logo.png"></a>
+        {% if has_tab %}
+            <div class="sub_page_name fl">|&nbsp;&nbsp;&nbsp;&nbsp;{{ tab_name }}</div>
+        {% endif %}
+		<div class="search_con fl">
+			<input type="text" class="input_text fl" name="" placeholder="搜索商品">
+			<input type="button" class="input_btn fr" name="" value="搜索">
+		</div>
+        {# 我的购物车 #}
+        {% if has_cart %}
+            <div class="guest_cart fr">
+                <a href="/carts/list/" class="cart_name fl">我的购物车</a>
+                <div class="goods_count fl">{{ total_count }}</div>
+            </div>
+        {% endif %}
+	</div>
+{% endblock %}

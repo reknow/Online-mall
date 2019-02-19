@@ -1,0 +1,124 @@
+{% extends 'base_head.html' %}
+{% block body_script %}
+    <script>
+        {# 1. 实现商品总价格的计算function(name,age){}('zhangsan', 10); #}
+        function get_total_price() {
+            var total_price = 0;
+            var total_count = 0;
+            {# 1.1 实现单个商品的小计价格的计算 #}
+            {# 如果遇到需要遍历多个结构相同的标签，并且还得让每一个遍历出来的标签执行相同的逻辑代码，此时使用each()，它的作用就类似于for循环可以对某一类标签循环遍历，each()的特点就是每遍历出来一个标签，让这个标签自动执行each()中的匿名函数。 #}
+            $('.cart_list_td').each(function () {
+                {# 获取每一个商品的单价和数量 #}
+                good_price = $(this).children('.col05').text();
+                good_count = $(this).find('.num_show').val();
+                prices = parseInt(good_count) * parseFloat(good_price);
+                {# 将小计的价格prices替换Html中的默认价格 #}
+                $(this).children('.col07').text(prices.toFixed(2) + '元');
+                {# 1.2 将每次循环到的价格和数量进行累加，计算总计的价格 #}
+                {# 在计算总价和总数量时，需要考虑当前哪些商品是被选中的，只计算被选中的商品；没有选中的商品不进行计算。 #}
+                if ($(this).find('.col01 > input').prop('checked')){
+                    total_price += parseFloat(prices);
+                    total_count += parseInt(good_count);
+                }
+            });
+            $('.settlements > .col03 > em').text(total_price.toFixed(2));
+            $('.settlements > .col03 > b').text(total_count);
+        }
+        get_total_price();
+        {# 2. 实现商品的选中和非选中功能 #}
+        {# 2.1 实现全部选中和全部取消功能 #}
+        $('#select_all').click(function () {
+            {# 先判断当前 “全选框” 的选中状态，如果当前是选中，就改为非选中；如果当前是非选中，就改为选中 #}
+            {# attr()和prop()两个都可以获取属性值：attr()一般是用于获取id、class等非BOOL类型的属性；prop()一般用于获取BOOL类型的属性值(check检查框、select选择框、disabled属性) #}
+            {# prop('checked')它获取的是点击之后的状态，不是点击之前的状态； #}
+            is_select = $(this).prop('checked');
+            {# 当前全选是手动修改的状态，这里不需要用代码控制；只需要用代码控制商品的选择框。 #}
+            $('.good_check').prop('checked', is_select);
+            {# 调用统计函数，实时计算商品总价和总数量 #}
+            get_total_price();
+        });
+        {# 3. 在某一个商品的选中状态发生改变时，如何控制 "全选" 的选中状态。 #}
+        {# 获取商品选中状态为True的总个数，如果选中状态为True的总个数等于商品列表总个数，全选；如果如果选中状态为True的总个数不等于商品列表总个数，非全选。 #}
+        $('.good_check').click(function () {
+            {# 先判断当前选择的输入框的状态 #}
+            {# input[type="checkbox"]:checked: 固定用法，获取当前选中(checked=true)的input标签。 #}
+            if ($('.good_check:checked').length == $('.good_check').length){
+                {# "全选需要被勾上" #}
+                $('#select_all').prop('checked', true);
+            }else{
+                $('#select_all').prop('checked', false);
+            }
+            get_total_price();
+        });
+
+        $('#jiesuan').click(function(){
+            {# 商品总金额、商品总件数、当前勾选的商品的id。 #}
+            total_price = $('.settlements > .col03 > em').text();
+            total_count = $('.settlements > .col03 > b').text();
+            carts_id = '';
+            $('.cart_list_td').each(function () {
+                {# 遍历所有的商品ul标签，然后判断哪一个选择框是被勾选的，如果被勾选了，再通过js找到这个ul标签中包含的商品的ID，然后，将所有勾选的商品的ID保存到列表中。 #}
+                if ($(this).find('.col01 > input').prop('checked')){
+                    cart_id = $(this).attr('id');
+                    carts_id += cart_id;
+                    carts_id += ';'
+                }
+            });
+            $.ajax({
+                url: '/order/index/',
+                data: {
+                    'total_price': total_price,
+                    'total_count': total_count,
+                    'carts_id': carts_id
+                },
+                success: function (data, status){
+                    {#window.location.href = '/order/index/'#}
+                }
+            });
+        });
+    </script>
+{% endblock %}
+{% block body %}
+    <div class="total_count">全部商品<em>2</em>件</div>
+	<ul class="cart_list_th clearfix">
+		<li class="col01">商品名称</li>
+		<li class="col02">商品单位</li>
+		<li class="col03">商品价格</li>
+		<li class="col04">数量</li>
+		<li class="col05">小计</li>
+		<li class="col06">操作</li>
+	</ul>
+    {% if carts_record %}
+        <form action="/order/index/" method="get">
+            {# 在提交form表单请求的时候，像<input type="checkbox" name="" checked class="good_check">标签，也会提交相应的value值，但是只提交勾选的input的value，没有勾选的不会进行提交。 #}
+            {% for cart in carts_record %}
+                <ul class="cart_list_td clearfix" >
+                    <li class="col01"><input type="checkbox" name="cart_id" value="{{ cart.id }}" checked class="good_check"></li>
+                    <li class="col02"><img src="/static/{{ cart.good.g_pic }}"></li>
+                    <li class="col03">{{ cart.good.g_title }}<br><em>{{ cart.good.g_price }}元/{{ cart.good.g_unit }}</em></li>
+                    <li class="col04">{{ cart.good.g_unit }}</li>
+                    <li class="col05">{{ cart.good.g_price }}元</li>
+                    <li class="col06">
+                        <div class="num_add">
+                            <a href="javascript:;" class="add fl">+</a>
+                            <input type="text" class="num_show fl" value="{{ cart.count }}">
+                            <a href="javascript:;" class="minus fl">-</a>
+                        </div>
+                    </li>
+                    <li class="col07">25.80元</li>
+                    <li class="col08"><a href="javascript:;">删除</a></li>
+                </ul>
+            {% endfor %}
+            <ul class="settlements">
+                <li class="col01"><input type="checkbox" name="" checked="" id="select_all"></li>
+                <li class="col02">全选</li>
+                <li class="col03">合计(不含运费)：<span>¥</span><em>42.60</em><br>共计<b>2</b>件商品</li>
+                <li class="col04"><input type="submit" value="结算"></li>
+            </ul>
+        </form>
+    {% else %}
+        <ul class="cart_list_td clearfix">
+            <h2>购物车没有记录，请添加购物车</h2>
+        </ul>
+    {% endif %}
+{% endblock %}
