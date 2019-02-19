@@ -48,6 +48,4 @@ def add(request, goods_id, goods_count):
         total_count += cart.count
     return JsonResponse({'total_count': total_count})
 
-# 支付宝支付；
-# Django的中间件执行过程，自定义中间件；
-# Django的数据缓存；
+
